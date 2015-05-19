@@ -1,0 +1,28 @@
+{
+  "name": "async-lib",
+  "version": "0.0.0",
+  "description": "",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/DEADB17/async-lib.git"
+  },
+  "bugs": "https://github.com/DEADB17/async-lib/issues",
+  "main": "index.js",
+  "scripts": {
+    "test": "node_modules/.bin/tape test*.js",
+    "release-patch": "git checkout master && npm version patch && git push origin master --tags && npm publish",
+    "release-minor": "git checkout master && npm version minor && git push origin master --tags && npm publish",
+    "release-major": "git checkout master && npm version major && git push origin master --tags && npm publish"
+  },
+  "keywords": [
+    "async",
+    "asynchronous",
+    "utilities",
+    "library"
+  ],
+  "author": "DEADB17@gmail.com",
+  "license": "MIT",
+  "devDependencies": {
+    "tape": "^4.0.0"
+  }
+}
