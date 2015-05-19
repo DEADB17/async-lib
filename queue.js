@@ -29,7 +29,7 @@ function get(q /*listeners*/) {
 
 function create(/*listeners*/) {
     return Object.seal({
-        listeners: arguments.length ? slice.call(arguments) : [],
+        listeners: slice.call(arguments),
         value: undefined,
     });
 }
