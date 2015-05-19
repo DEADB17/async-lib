@@ -2,40 +2,35 @@
 
 var slice = Array.prototype.slice;
 
-function set(q, val) {
-    var listener, next, ret;
-    if (arguments.length > 1) { q.value = val; }
-    if (q.listeners.length > 0) {
-        listener = q.listeners.shift();
-        if (typeof listener === 'function') {
-            next = set.bind(null, q);
-            ret = listener(q.value, next, q);
-            if (ret !== next) {
-                set(q, ret);
+function create(/*listeners*/) {
+    var listeners = slice.call(arguments);
+    var value;
+
+    function set(val) {
+        var listener, ret;
+        if (arguments.length > 0) { value = val; }
+        if (listeners.length > 0) {
+            listener = listeners.shift();
+            if (typeof listener === 'function') {
+                ret = listener(value, set);
+                if (ret !== set) {
+                    set(ret);
+                }
+            } else {
+                set(listener);
             }
-        } else {
-            set(q, listener);
         }
     }
-    return q;
+
+    return function add(/*listeners*/) {
+        var isSettled;
+        if (arguments.length > 0) {
+            isSettled = listeners.length < 1;
+            listeners.push.apply(listeners, slice.call(arguments));
+            if (isSettled) { set(value); }
+        }
+        return add;
+    };
 }
 
-function get(q /*listeners*/) {
-    var listeners = q.listeners;
-    var isSettled = listeners.length < 1;
-    listeners.push.apply(listeners, slice.call(arguments, 1));
-    return isSettled ? set(q, q.value) : q;
-}
-
-function create(/*listeners*/) {
-    return Object.seal({
-        listeners: slice.call(arguments),
-        value: undefined,
-    });
-}
-
-module.exports = {
-    create: create,
-    get: get,
-    set: set,
-};
+module.exports = create;
