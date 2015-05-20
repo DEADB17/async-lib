@@ -8,23 +8,22 @@ module.exports = function (/*listeners*/) {
     var pending = slice.call(arguments);
     var value;
 
-    function next(caller, val) {
-        if (caller === pending[0]) {
-            if (arguments.length > 1) {
-                value = val;
-            }
-            pending.shift();
-            set(value);
-        }
-    }
-
     function set(val) {
-        var newVal;
+        var newVal, caller;
         value = val;
         if (pending.length > 0) {
             newVal = pending[0];
             if (typeof newVal === 'function') {
-                newVal = newVal(value, next.bind(null, newVal), NONE);
+                caller = newVal;
+                newVal = newVal(value, function (val) {
+                    if (caller === pending[0]) {
+                        if (arguments.length > 0) {
+                            value = val;
+                        }
+                        pending.shift();
+                        set(value);
+                    }
+                }, NONE);
                 if (newVal === undefined) {
                     return;
                 } else if (newVal === NONE) {
