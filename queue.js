@@ -2,28 +2,36 @@
 
 var slice = Array.prototype.slice;
 
-function create(/*listeners*/) {
-    var listeners = slice.call(arguments);
+function NONE() {}
+
+module.exports = function (/*listeners*/) {
+    var pending = slice.call(arguments);
     var value;
 
-    function next(val) {
-        if (arguments.length > 0) { value = val; }
-        listeners.shift();
-        set(value);
+    function next(caller, val) {
+        if (caller === pending[0]) {
+            if (arguments.length > 1) {
+                value = val;
+            }
+            pending.shift();
+            set(value);
+        }
     }
 
     function set(val) {
         var newVal;
         value = val;
-        if (listeners.length > 0) {
-            newVal = listeners[0];
+        if (pending.length > 0) {
+            newVal = pending[0];
             if (typeof newVal === 'function') {
-                newVal = newVal(value, next);
-                if (newVal === next) {
+                newVal = newVal(value, next.bind(null, newVal), NONE);
+                if (newVal === undefined) {
                     return;
+                } else if (newVal === NONE) {
+                    newVal = undefined;
                 }
             }
-            listeners.shift();
+            pending.shift();
             set(newVal);
         }
     }
@@ -31,15 +39,17 @@ function create(/*listeners*/) {
     function add(/*listeners*/) {
         var isSettled;
         if (arguments.length > 0) {
-            isSettled = listeners.length < 1;
-            listeners.push.apply(listeners, slice.call(arguments));
-            if (isSettled) { set(value); }
+            isSettled = pending.length < 1;
+            pending.push.apply(pending, slice.call(arguments));
+            if (isSettled) {
+                set(value);
+            }
         }
         return add;
     }
 
-    if (listeners.length > 0) { set(value); }
+    if (pending.length > 0) {
+        set(value);
+    }
     return add;
-}
-
-module.exports = create;
+};
