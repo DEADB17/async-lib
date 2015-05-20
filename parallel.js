@@ -11,10 +11,12 @@ function parallel(producers, collect) {
         producer = producers[key];
         if (typeof producer === 'function') {
             producer(function (val) {
-                result[key] = val;
-                pending -= 1;
-                if (hasCollect && pending === 0) {
-                    collect(result);
+                if (!result.hasOwnProperty(key)) {
+                    pending -= 1;
+                    result[key] = val;
+                    if (hasCollect && pending === 0) {
+                        collect(result);
+                    }
                 }
             }, result, pending, isArray ? +key : key);
         } else {
