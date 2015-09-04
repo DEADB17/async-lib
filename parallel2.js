@@ -23,13 +23,12 @@ module.exports = function parallel(producers, doneCallback) {
 
     for (key in producers) {
         if (producers.hasOwnProperty(key)) {
-            ++pending;
             producer = producers[key];
             if (typeof producer === 'function') {
+                ++pending;
                 producer(makeCallback(key));
             } else {
                 results[key] = producer;
-                --pending;
             }
         }
     }
